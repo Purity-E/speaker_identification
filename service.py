@@ -20,6 +20,7 @@ import os
     #output = await songornot_runner.async_run(Path)
     #return output
 
+
 @bentoml.service( resources={
         "gpu": 1,
         "memory": "8Gi",
@@ -43,66 +44,21 @@ class Diarization:
         from pyannote.core import Annotation
         import pandas as pd
         from pydub import AudioSegment
+        from inference.inference import make_df
+        from inference.inference import merge_consecutive_audios
         #saving audio to memory
         waveform, sample_rate = torchaudio.load(audio)
         audio_in_memory = {"waveform": waveform, "sample_rate": sample_rate}
         #applying pretrained pipeline
         dia = self.pipeline(audio_in_memory)
         assert isinstance(dia, Annotation)
-        
-        for i, value in enumerate(dia.itertracks(yield_label=True)):
-            first_segment = value 
-            break
-
-        speech_turn = first_segment[0]
-        turn = first_segment[1]
-        current_speaker = first_segment[2]
-        start = f"{speech_turn.start:.1f}"
-        end_time = f"{speech_turn.end:.1f}"
-
-        speakers = []
-        starting = []
-        ending = []
-
-        for speech_turn, track, speaker in dia.itertracks(yield_label=True):
-            start_turn = f"{speech_turn.start:.1f}"
-            end_turn = f"{speech_turn.end:.1f}"
-            if speaker != current_speaker and start_turn != end_turn:
-                speakers.append(current_speaker)
-                starting.append(float(start_time))
-                ending.append(float(end_time))
-                current_speaker = speaker
-                start = f"{speech_turn.start:.1f}"
-            else:
-                start_time = start
-                end_time = f"{speech_turn.end:.1f}"
-                
-
-        speakers.append(current_speaker)
-        starting.append(float(start_time))
-        ending.append(float(end_time))
-                
-        df = pd.DataFrame(list(zip(speakers, starting, ending)),
-                    columns =['speakers', 'start', 'end'])
+        # creating dataframe from diarization results
+        df = make_df(dia.itertracks(yield_label=True))
         df2 = df.drop_duplicates(subset=["start", "end"], keep='first')
         df2.reset_index(drop=True,inplace=True)
-        def merge_consecutive_rows(df, condition_column):
-            # Create a mask to identify consecutive rows
-            mask = df[condition_column] != df[condition_column].shift(1)
-
-            # Assign a group number to consecutive rows
-            group_number = mask.cumsum()
-
-            # Group by the consecutive groups and aggregate the data
-            result_df = df.groupby([group_number], as_index=False).agg({
-                condition_column: 'first',  # Take the first value in the group
-                'start': 'first', 
-                    'end' :'last'    # Example: sum other columns if needed
-            })
-            result_df['period'] = result_df['end'] - result_df['start']
-            return result_df
-
-        result_df = merge_consecutive_rows(df2, 'speakers')
+        
+        # merging consecutive audios from same speaker
+        result_df = merge_consecutive_audios(df2, 'speakers')
     
         final_df = result_df[result_df['period']>=10]
         final_df.reset_index(inplace=True, drop=True)
