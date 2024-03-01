@@ -1,0 +1,8 @@
+config.yaml
+inference
+Pipfile
+songornot_model
+Speaker_models
+feature_extraction.py
+test.py
+training.py
