@@ -1,0 +1,11 @@
+service: 'service:Diarization'
+labels:
+  owner: purity
+  stage: not-ready
+include:
+  - "service.py"
+  - "/inference/"
+  - "embedding_dict.pt"
+  - "config.yaml"
+python:
+    requirements_txt: "requirements.txt"
