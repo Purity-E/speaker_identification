@@ -1,4 +1,4 @@
-config.yaml
+config.py
 inference
 Pipfile
 songornot_model
@@ -6,3 +6,4 @@ Speaker_models
 feature_extraction.py
 test.py
 training.py
+config.yaml

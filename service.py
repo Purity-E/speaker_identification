@@ -32,8 +32,9 @@ class Diarization:
     def __init__(self) -> None:
         import torch
         from pyannote.audio import Pipeline
+        from inference import config
         #loading model into pipeline
-        self.pipeline = Pipeline.from_pretrained("config.yaml")
+        self.pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization-3.1", use_auth_token=config.token)
 
         # sending pipeline to GPU (when available)
         self.pipeline.to(torch.device("cuda:0" if torch.cuda.is_available() else "cpu"))

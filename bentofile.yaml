@@ -1,4 +1,5 @@
 service: 'service:Diarization'
+description: "file: ./README.md"
 labels:
   owner: purity
   stage: not-ready
@@ -6,6 +7,9 @@ include:
   - "service.py"
   - "/inference/"
   - "embedding_dict.pt"
-  - "config.yaml"
+  - "config.py"
 python:
     requirements_txt: "requirements.txt"
+docker:
+  cuda_version: "11.8"
+  

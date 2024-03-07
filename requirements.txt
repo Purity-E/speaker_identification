@@ -1,8 +1,9 @@
 bentoml>=1.2.0rc1
 pyannote-audio==3.1.1
-torch==2.1.1
-torchaudio==2.1.1
+torch
+torchaudio
 pydub==0.25.1
 pyannote.core==5.0.0
 pandas==2.2.0
 scipy==1.12.0
+torchvision
